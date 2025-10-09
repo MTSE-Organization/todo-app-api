@@ -10,8 +10,6 @@
 - **TypeScript**
 - **MySQL**
 - **Sequelize**
-- **Redis**
-- **Elasticsearch**
 
 ## 🚀 LAUNCH APPLICATION:
 

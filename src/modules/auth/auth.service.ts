@@ -4,22 +4,14 @@ import { RegisterForm } from './forms/register.form';
 import { BadRequestException, NotFoundException } from '@/common/exceptions';
 import { Constant, ErrorCode } from '@/constants';
 import { JwtService } from '@nestjs/jwt';
-import { OtpService } from '../otp/otp.service';
-import { MailService } from '../mail/mail.service';
-import {
-  ActiveAccountForm,
-  ChangePasswordForm,
-  ForgotPasswordForm
-} from './forms';
-import { UserDetailsDto, UserInfoGoogleDto } from './dtos';
+import { ChangePasswordForm, ForgotPasswordForm } from './forms';
+import { UserDetailsDto } from './dtos';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accountService: AccountService,
-    private readonly jwtService: JwtService,
-    private readonly otpService: OtpService,
-    private readonly mailService: MailService
+    private readonly jwtService: JwtService
   ) {}
 
   async register(form: RegisterForm) {
@@ -38,26 +30,9 @@ export class AuthService {
     }
     await this.accountService.createUser(form);
 
-    // otp
-    const otp = this.otpService.generateOtp();
-    await this.otpService.storeOtp(form.email, otp);
-
-    // send email
-    void this.mailService.sendActivationMail(form.email, otp);
-
     return {
       message: 'Register successfully'
     };
-  }
-
-  async verifyOtp(form: ActiveAccountForm) {
-    const isVerified = await this.otpService.verifyOtp(form.email, form.otp);
-    if (!isVerified) {
-      throw new BadRequestException('Invalid or expired OTP');
-    }
-    // OTP valid - proceed to activate the user account or mark as verified
-    await this.accountService.activateUser(form.email);
-    return { message: 'OTP verified successfully' };
   }
 
   async login(user: UserDetailsDto) {
@@ -78,13 +53,6 @@ export class AuthService {
       );
     }
 
-    // otp
-    const otp = this.otpService.generateOtp();
-    await this.otpService.storeOtp(form.email, otp);
-
-    // send email
-    void this.mailService.sendForgotPasswordMail(form.email, otp);
-
     return {
       message: 'Send OTP successfully'
     };
@@ -98,13 +66,6 @@ export class AuthService {
         ErrorCode.ACCOUNT_ERROR_EMAIL_INVALID
       );
     }
-    const isVerified = await this.otpService.verifyOtp(form.email, form.otp);
-    if (!isVerified) {
-      throw new BadRequestException(
-        'Invalid or expired OTP',
-        ErrorCode.AUTH_ERROR_OTP_INVALID_OR_EXPIRED
-      );
-    }
     if (form.password !== form.confirmPassword) {
       throw new BadRequestException(
         'Password and Confirm Password do not match',
@@ -113,21 +74,5 @@ export class AuthService {
     }
     await this.accountService.changePassword(form.email, form.password);
     return { message: 'Change password successfully' };
-  }
-
-  async handleSocialLogin(userInfo: UserInfoGoogleDto) {
-    let account = await this.accountService.findByEmail(userInfo.email);
-    if (!account) {
-      account = await this.accountService.createUserSocial(userInfo);
-    }
-    const authorities = account.group?.permissions?.map((p) => p.pCode) ?? [];
-    const user = new UserDetailsDto(
-      account.id,
-      account.kind,
-      authorities,
-      account.isSuperAdmin
-    );
-    const token = await this.jwtService.signAsync({ ...user });
-    return { message: 'Login successfully', token };
   }
 }
