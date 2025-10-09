@@ -199,14 +199,6 @@ module.exports = {
         {
           group_id: 2,
           permission_id: '2782506053361733632'
-        },
-        {
-          group_id: 1,
-          permission_id: '2782506301823913984'
-        },
-        {
-          group_id: 2,
-          permission_id: '2782506301823913984'
         }
       ],
       {}

@@ -14,13 +14,9 @@ import { GroupModule } from './modules/group/group.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { StartTimingMiddleware } from './common/middlewares/start-timing.middleware';
 import { JwtModule } from '@nestjs/jwt';
-import { OtpModule } from './modules/otp/otp.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { MailModule } from './modules/mail/mail.module';
-import { cacheConfig, jwtConfig, mailConfig } from './config';
+import { jwtConfig } from './config';
 import { FileModule } from './modules/file/file.module';
-import { ScheduleModule } from '@nestjs/schedule';
+import { TodosModule } from './modules/todos/todos.module';
 //#endregion
 
 @Module({
@@ -28,16 +24,12 @@ import { ScheduleModule } from '@nestjs/schedule';
     ConfigModule.forRoot({ isGlobal: true }),
     SequelizeModule.forRootAsync(sequelizeConfig),
     JwtModule.registerAsync(jwtConfig),
-    CacheModule.registerAsync(cacheConfig),
-    MailerModule.forRootAsync(mailConfig),
-    ScheduleModule.forRoot(),
     AuthModule,
     AccountModule,
     GroupModule,
     PermissionModule,
-    OtpModule,
-    MailModule,
-    FileModule
+    FileModule,
+    TodosModule
   ]
 })
 export class AppModule implements NestModule {

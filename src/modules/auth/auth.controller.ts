@@ -1,31 +1,14 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-  Req,
-  UseGuards
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import {
-  ActiveAccountForm,
-  ChangePasswordForm,
-  ForgotPasswordForm,
-  RegisterForm
-} from './forms';
+import { ChangePasswordForm, ForgotPasswordForm, RegisterForm } from './forms';
 import { JwtAuthGuard } from './guards';
-import { UserDetailsDto, UserInfoGoogleDto } from './dtos';
-import { GoogleService } from './google.service';
+import { UserDetailsDto } from './dtos';
 import { ApiResponseNoData } from '@/common/decorators';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly googleService: GoogleService
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @ApiResponseNoData({
     message: 'Register successfully'
@@ -33,14 +16,6 @@ export class AuthController {
   @Post('register')
   async register(@Body() form: RegisterForm) {
     return await this.authService.register(form);
-  }
-
-  @ApiResponseNoData({
-    message: 'Verify otp successfully'
-  })
-  @Post('verify-otp')
-  async verifyOtp(@Body() form: ActiveAccountForm) {
-    return this.authService.verifyOtp(form);
   }
 
   @ApiResponseNoData({
@@ -68,23 +43,5 @@ export class AuthController {
   @Post('login')
   async login(@Req() req: any) {
     return await this.authService.login(req.user);
-  }
-
-  @ApiResponseNoData({
-    message: 'Get link successfully'
-  })
-  @Get('google')
-  googleLogin() {
-    return this.googleService.generateAuthUrl();
-  }
-
-  @ApiResponseNoData({
-    message: 'Login successfully'
-  })
-  @Post('google/callback')
-  async googleCallback(@Query('code') code: string) {
-    const userInfo: UserInfoGoogleDto =
-      await this.googleService.getUserInfo(code);
-    return await this.authService.handleSocialLogin(userInfo);
   }
 }
