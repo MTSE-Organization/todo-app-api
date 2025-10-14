@@ -41,6 +41,7 @@ export class TodosController {
   @UseGuards(JwtAuthGuard)
   async list(@Query() form: FilterTodosForm, @Req() req: any) {
     const accountId = req.user.id;
+    form.accountId = accountId;
     form.status = Constant.STATUS_ACTIVE;
     const { todos, count } = await this.todosService.findAll(form, accountId);
     return {
@@ -82,6 +83,7 @@ export class TodosController {
   @Get('auto-complete')
   async autocomplete(@Query() form: FilterTodosForm, @Req() req: any) {
     const accountId = req.user.id;
+    form.accountId = accountId;
     const { todos, count } = await this.todosService.findAll(form, accountId);
     return {
       content: MapperUtil.toDtoList(todos, TodosAutoCompleteDto),

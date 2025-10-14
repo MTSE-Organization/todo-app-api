@@ -28,6 +28,9 @@ export class FilterTodosForm extends PaginationForm {
   @NumberDecorator('status')
   status?: number;
 
+  @BigIntDecorator('accountId')
+  accountId: bigint;
+
   getFilter(): Record<string, any> {
     const where: Record<string, any> = {};
     if (!StringUtil.isEmpty(this.title))
@@ -42,6 +45,7 @@ export class FilterTodosForm extends PaginationForm {
       where.dueDate = { [Op.lte]: this.dueDateTo };
     }
     if (this.status) where.status = this.status;
+    if (this.accountId) where.accountId = this.accountId;
     return where;
   }
 }

@@ -9,4 +9,7 @@ export class TodosAutoCompleteDto {
 
   @Expose()
   status: number;
+
+  @Expose()
+  dueDate: Date;
 }

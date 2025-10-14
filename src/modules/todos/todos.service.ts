@@ -19,13 +19,6 @@ export class TodosService {
   async create(accountId: bigint, form: CreateTodosForm) {
     await this.accountService.findById(accountId);
 
-    if (await this.existsByTitleAndAccount(form.title, accountId)) {
-      throw new BadRequestException(
-        'Todo title already exists for this account',
-        ErrorCode.TODOS_ERROR_TITLE_EXISTED
-      );
-    }
-
     const todo = await this.todosRepository.create({
       ...form,
       accountId,
@@ -38,17 +31,6 @@ export class TodosService {
   async update(form: UpdateTodosForm, accountId: bigint) {
     const { id, ...data } = form;
     const todo = await this.findByIdAndAccount(id, accountId);
-
-    if (
-      data.title &&
-      data.title !== todo.title &&
-      (await this.existsByTitleAndAccount(data.title, accountId))
-    ) {
-      throw new BadRequestException(
-        'Todo title already exists for this account',
-        ErrorCode.TODOS_ERROR_TITLE_EXISTED
-      );
-    }
 
     todo.set(data);
     await todo.save();
