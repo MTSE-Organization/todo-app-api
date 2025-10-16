@@ -4,18 +4,20 @@ import {
   DateDecorator,
   NumberDecorator
 } from '@/common/decorators';
+import { DueDateDecorator } from '@/common/decorators/due-date.decorator';
+import { TitleDecorator } from '@/common/decorators/title.decorator';
 
 export class UpdateTodosForm {
   @BigIntDecorator('id', true)
   id: bigint;
 
-  @StringDecorator('title', false)
+  @TitleDecorator('title', false)
   title?: string;
 
   @StringDecorator('description', false)
   description?: string;
 
-  @DateDecorator('dueDate', false)
+  @DueDateDecorator('dueDate', false)
   dueDate?: Date;
 
   @NumberDecorator('status', false)
