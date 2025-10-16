@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { BadRequestException, NotFoundException } from '@/common/exceptions';
+import { NotFoundException } from '@/common/exceptions';
 import { Constant, ErrorCode } from '@/constants';
 import { AccountService } from '../account/account.service';
 import { Todos } from '@/models';
 import { CreateTodosForm, FilterTodosForm, UpdateTodosForm } from './forms';
-import { Op } from 'sequelize';
 
 @Injectable()
 export class TodosService {

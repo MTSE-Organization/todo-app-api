@@ -1,5 +1,5 @@
 import { Account, Group, Permission } from '@/models';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { RegisterForm } from '../auth/forms/register.form';
 import {
@@ -9,7 +9,7 @@ import {
 } from '@/common/exceptions';
 import { Constant, ErrorCode } from '@/constants';
 import { FilterAccountForm, UpdateProfileForm } from './forms';
-import { UserDetailsDto, UserInfoGoogleDto } from '../auth/dtos';
+import { UserDetailsDto } from '../auth/dtos';
 import * as bcrypt from 'bcryptjs';
 import { GroupService } from '../group/group.service';
 import { FileService } from '../file/file.service';
@@ -103,20 +103,7 @@ export class AccountService {
     const data = {
       ...form,
       kind: Constant.ACCOUNT_KIND_USER,
-      status: Constant.STATUS_PENDING
-    };
-    const group = await this.groupService.findByName(Constant.GROUP_NAME_USER);
-    const account = await this.accountRepository.create(data);
-    await account.$set('group', group);
-    return account;
-  }
-
-  async createUserSocial(userInfo: UserInfoGoogleDto): Promise<Account> {
-    const data = {
-      email: userInfo.email,
-      fullName: userInfo.name,
-      avatarPath: userInfo.picture,
-      kind: Constant.ACCOUNT_KIND_USER
+      status: Constant.STATUS_ACTIVE
     };
     const group = await this.groupService.findByName(Constant.GROUP_NAME_USER);
     const account = await this.accountRepository.create(data);
@@ -155,33 +142,6 @@ export class AccountService {
       'Unauthorized',
       ErrorCode.AUTH_ERROR_UNAUTHORIZED
     );
-  }
-
-  async activateUser(email: string) {
-    const account = await this.findByEmail(email);
-    if (!account) {
-      throw new NotFoundException(
-        'Account not found',
-        ErrorCode.ACCOUNT_ERROR_NOT_FOUND
-      );
-    }
-    account.status = Constant.STATUS_ACTIVE;
-    await account.save();
-  }
-
-  async changePassword(email: string, password: string) {
-    const account = await this.findByEmailAndStatus(
-      email,
-      Constant.STATUS_ACTIVE
-    );
-    if (!account) {
-      throw new NotFoundException(
-        'Account not found',
-        ErrorCode.ACCOUNT_ERROR_NOT_FOUND
-      );
-    }
-    account.password = this.hashPassword(password);
-    await account.save();
   }
 
   async updateProfile(id: number, data: UpdateProfileForm) {
