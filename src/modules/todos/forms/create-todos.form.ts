@@ -1,12 +1,14 @@
 import { StringDecorator, DateDecorator } from '@/common/decorators';
+import { DueDateDecorator } from '@/common/decorators/due-date.decorator';
+import { TitleDecorator } from '@/common/decorators/title.decorator';
 
 export class CreateTodosForm {
-  @StringDecorator('title', true)
+  @TitleDecorator('title', true)
   title: string;
 
   @StringDecorator('description', false)
   description?: string;
 
-  @DateDecorator('dueDate', true)
+  @DueDateDecorator('dueDate', true)
   dueDate: Date;
 }
