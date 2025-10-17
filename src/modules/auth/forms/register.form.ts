@@ -7,9 +7,8 @@ export class RegisterForm {
   email: string;
 
   @StringDecorator('password', true)
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/, {
-    message:
-      'Password must be at least 8 characters long, contain at least one letter and one number'
+  @Matches(/^.{8,}$/, {
+    message: 'Password must be at least 8 characters long'
   })
   password: string;
 
