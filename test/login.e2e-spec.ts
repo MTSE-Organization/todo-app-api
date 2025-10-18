@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '@/app.module';
+import { TransformInterceptor } from '@/common/interceptors/response.interceptor';
+import { AllExceptionFilter } from '@/common/filters/all-exception.filter';
 
 describe('AuthController', () => {
   let app: INestApplication;
@@ -12,6 +14,15 @@ describe('AuthController', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true
+      })
+    );
+    app.useGlobalInterceptors(new TransformInterceptor());
+    app.useGlobalFilters(new AllExceptionFilter());
     await app.init();
   });
 
@@ -19,7 +30,7 @@ describe('AuthController', () => {
     expect(app).toBeDefined();
   });
 
-  it('IT-LOGIN-01', async () => {
+  it('TC_LOGIN_0001', async () => {
     const response = await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'user@gmail.com', password: '12345678' })
@@ -35,70 +46,70 @@ describe('AuthController', () => {
     );
   });
 
-  it('IT-LOGIN-02', async () => {
+  it('TC_LOGIN_0002', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ password: '12345678' })
       .expect(401);
   });
 
-  it('IT-LOGIN-03', async () => {
+  it('TC_LOGIN_0003', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: null, password: '12345678' })
       .expect(401);
   });
 
-  it('IT-LOGIN-04', async () => {
+  it('TC_LOGIN_0004', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: '', password: '12345678' })
       .expect(401);
   });
 
-  it('IT-LOGIN-05', async () => {
+  it('TC_LOGIN_0005', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'test', password: '12345678' })
       .expect(400);
   });
 
-  it('IT-LOGIN-06', async () => {
+  it('TC_LOGIN_0006', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'user@gmail.com' })
       .expect(401);
   });
 
-  it('IT-LOGIN-07', async () => {
+  it('TC_LOGIN_0007', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'user@gmail.com', password: null })
       .expect(401);
   });
 
-  it('IT-LOGIN-08', async () => {
+  it('TC_LOGIN_0008', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'user@gmail.com', password: '' })
       .expect(401);
   });
 
-  it('IT-LOGIN-09', async () => {
+  it('TC_LOGIN_0009', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'user@gmail.com', password: '1234567' })
       .expect(400);
   });
 
-  it('IT-LOGIN-10', async () => {
+  it('TC_LOGIN_0010', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'user-error@gmail.com', password: '12345678' })
       .expect(401);
   });
 
-  it('IT-LOGIN-11', async () => {
+  it('TC_LOGIN_0011', async () => {
     return await request(app.getHttpServer())
       .post('/auth/login')
       .send({ email: 'user@gmail.com', password: '123456789' })

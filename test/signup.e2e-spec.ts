@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '@/app.module';
+import { TransformInterceptor } from '@/common/interceptors/response.interceptor';
+import { AllExceptionFilter } from '@/common/filters/all-exception.filter';
 
 describe('AuthController', () => {
   let app: INestApplication;
@@ -12,6 +14,15 @@ describe('AuthController', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true
+      })
+    );
+    app.useGlobalInterceptors(new TransformInterceptor());
+    app.useGlobalFilters(new AllExceptionFilter());
     await app.init();
   });
 
@@ -19,90 +30,247 @@ describe('AuthController', () => {
     expect(app).toBeDefined();
   });
 
-  it('IT-LOGIN-01', async () => {
+  it('TC_SIGNUP_0001', async () => {
+    const uniqueEmail = `user${Date.now()}@gmail.com`;
+    const body = {
+      email: uniqueEmail,
+      password: '12345678',
+      confirmPassword: '12345678'
+    };
     const response = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'user@gmail.com', password: '12345678' })
+      .post('/auth/register')
+      .send(body)
       .expect(201);
 
     expect(response.body).toEqual(
       expect.objectContaining({
-        message: 'Login successfully',
-        data: expect.objectContaining({
-          token: expect.any(String)
-        })
+        result: true,
+        message: 'Register successfully'
       })
     );
   });
 
-  it('IT-LOGIN-02', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ password: '12345678' })
-      .expect(401);
-  });
-
-  it('IT-LOGIN-03', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: null, password: '12345678' })
-      .expect(401);
-  });
-
-  it('IT-LOGIN-04', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: '', password: '12345678' })
-      .expect(401);
-  });
-
-  it('IT-LOGIN-05', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'test', password: '12345678' })
+  it('TC_SIGNUP_0002', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ password: '12345678', confirmPassword: '12345678' })
       .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        result: false,
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
   });
 
-  it('IT-LOGIN-06', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'user@gmail.com' })
-      .expect(401);
-  });
-
-  it('IT-LOGIN-07', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'user@gmail.com', password: null })
-      .expect(401);
-  });
-
-  it('IT-LOGIN-08', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'user@gmail.com', password: '' })
-      .expect(401);
-  });
-
-  it('IT-LOGIN-09', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'user@gmail.com', password: '1234567' })
+  it('TC_SIGNUP_0003', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ email: null, password: '12345678', confirmPassword: '12345678' })
       .expect(400);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        result: false,
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
   });
 
-  it('IT-LOGIN-10', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'user-error@gmail.com', password: '12345678' })
-      .expect(401);
+  it('TC_SIGNUP_0004', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ email: '', password: '12345678', confirmPassword: '12345678' })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        result: false,
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
   });
 
-  it('IT-LOGIN-11', async () => {
-    return await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'user@gmail.com', password: '123456789' })
-      .expect(401);
+  it('TC_SIGNUP_0005', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'test',
+        password: '12345678',
+        confirmPassword: '12345678'
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        result: false,
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0006', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user@gmail.com',
+        password: '12345678',
+        confirmPassword: '12345678'
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        message: 'Account already exists',
+        code: 'ERROR-ACCOUNT-0001'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0007', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user-test@gmail.com',
+        confirmPassword: '12345678'
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0008', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user-test@gmail.com',
+        password: null,
+        confirmPassword: '12345678'
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0009', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user-test@gmail.com',
+        password: '',
+        confirmPassword: '12345678'
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0010', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user-test@gmail.com',
+        password: '1234567',
+        confirmPassword: '12345678'
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0011', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user-test@gmail.com',
+        password: '1234568'
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0012', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user-test@gmail.com',
+        password: '1234568',
+        confirmPassword: null
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0013', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user-test@gmail.com',
+        password: '1234568',
+        confirmPassword: ''
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
+  });
+
+  it('TC_SIGNUP_0014', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        email: 'user-test@gmail.com',
+        password: '1234568',
+        confirmPassword: '12345677'
+      })
+      .expect(400);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        code: 'ERROR',
+        message: 'Data not suitable'
+      })
+    );
   });
 
   afterAll(async () => {
