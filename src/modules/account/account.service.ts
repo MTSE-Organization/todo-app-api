@@ -2,17 +2,17 @@ import { Account, Group, Permission } from '@/models';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { RegisterForm } from '../auth/forms/register.form';
-import {
-  BadRequestException,
-  NotFoundException,
-  UnauthorizedException
-} from '@/common/exceptions';
 import { Constant, ErrorCode } from '@/constants';
 import { FilterAccountForm, UpdateProfileForm } from './forms';
 import { UserDetailsDto } from '../auth/dtos';
 import * as bcrypt from 'bcryptjs';
 import { GroupService } from '../group/group.service';
 import { FileService } from '../file/file.service';
+import {
+  BadRequestException,
+  NotFoundException,
+  UnauthorizedException
+} from '@/common/exceptions';
 
 @Injectable()
 export class AccountService {
