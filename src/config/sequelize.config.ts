@@ -25,6 +25,7 @@ export const sequelizeConfig: SequelizeModuleAsyncOptions = {
       underscored: true,
       createdAt: 'created_date',
       updatedAt: 'modified_date'
-    }
+    },
+    logging: false
   })
 };

@@ -13,7 +13,10 @@ export class TransformInterceptor<T>
   implements NestInterceptor<T, ApiResponse<T>>
 {
   private getDefaultMessage(method: string, path: string): string {
-    const basePath = path.split('/').filter(Boolean)[2].split('-').join(' ');
+    let basePath = 'default';
+    if (path.split('/').filter(Boolean)[2]) {
+      basePath = path.split('/').filter(Boolean)[2].split('-').join(' ');
+    }
     switch (method) {
       case 'POST':
         return `Create ${basePath} successfully`;
