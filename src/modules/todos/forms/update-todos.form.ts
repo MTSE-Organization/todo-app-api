@@ -19,7 +19,4 @@ export class UpdateTodosForm {
 
   @DueDateDecorator('dueDate', false)
   dueDate?: Date;
-
-  @NumberDecorator('status', false)
-  status?: number;
 }

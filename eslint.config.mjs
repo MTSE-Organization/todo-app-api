@@ -12,6 +12,7 @@ export default tseslint.config(
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -22,6 +23,13 @@ export default tseslint.config(
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+  {
+    files: ['**/*.spec.ts', '**/*.e2e-spec.ts', 'test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
   {
